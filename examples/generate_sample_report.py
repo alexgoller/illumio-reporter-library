@@ -7,6 +7,7 @@ import pandas as pd
 from reportlab.lib import colors
 import os
 from reportlab.lib.enums import TA_LEFT
+from src.ai_advisor import AnthropicModel, OpenAIModel, OllamaModel
 
 def illumio_color_scheme():
     return {
@@ -22,6 +23,16 @@ def illumio_color_scheme():
 def main():
     # Initialize DataFetcher
     data_fetcher = DataFetcher()
+    
+    # Initialize AI Model (choose one)
+    model = AnthropicModel(api_key=os.getenv('ANTHROPIC_API_KEY'), model="claude-3-5-sonnet-20240620")
+    # or
+    # model = OpenAIModel(api_key=os.getenv('OPENAI_API_KEY'), model="gpt-4-turbo-preview")
+    # or
+    # model = OllamaModel(model="llama2")
+    
+    # Initialize AI Advisor with chosen model
+    ai_advisor = AIAdvisor(model)
 
     # Fetch workload data
     workloads = data_fetcher.fetch_workload_data()
@@ -45,9 +56,6 @@ def main():
 
     # Initialize GraphGenerator
     graph_generator = GraphGenerator()
-
-    # Initialize AIAdvisor
-    ai_advisor = AIAdvisor()
 
     # Generate OS summary graph
     os_summary_data = workload_processor.get_os_summary_for_graph()
@@ -134,6 +142,16 @@ def main():
     enforcement_summary = workload_processor.get_enforcement_mode_summary().reset_index()
     enforcement_summary.columns = ['Enforcement Mode', 'Count']
     report_generator.add_table(enforcement_summary)
+
+    # Add network distribution section
+    report_generator.add_section("Network Distribution")
+    report_generator.add_explanation(
+        "This section shows the distribution of workloads across different networks.",
+        icon_path="examples/info_icon.png",
+        icon_position='left'
+    )
+    network_summary = workload_processor.get_workloads_by_network()
+    report_generator.add_table(network_summary)
 
     if not traffic_flows:
         print("No traffic data available. Skipping traffic section.")

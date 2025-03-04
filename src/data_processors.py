@@ -45,6 +45,33 @@ class WorkloadProcessor(BaseProcessor):
     def get_enforcement_mode_for_graph(self):
         return self.get_enforcement_mode_summary()
 
+    def get_workloads_by_network(self):
+        """
+        Group workloads by their network and return a summary DataFrame
+        """
+        # Group workloads by network
+        network_groups = self.df.groupby('network')
+        
+        # Create summary for each network
+        network_summaries = []
+        for network, group in network_groups:
+            summary = {
+                'Network': network if network else 'No Network',
+                'Total Workloads': len(group),
+                'Online Workloads': len(group[group['online'] == True]),
+                'Offline Workloads': len(group[group['online'] == False]),
+                'Unique OS Types': group['os_id'].nunique(),
+                'Enforcement Modes': group['enforcement_mode'].value_counts().to_dict()
+            }
+            network_summaries.append(summary)
+            
+        # Convert to DataFrame and sort by total workloads
+        summary_df = pd.DataFrame(network_summaries)
+        if not summary_df.empty:
+            summary_df = summary_df.sort_values('Total Workloads', ascending=False)
+            
+        return summary_df
+
 class WorkloadServiceProcessor(BaseProcessor):
     def __init__(self, detailed_workloads):
         service_data = []

@@ -1,14 +1,15 @@
 from src.data_fetcher import DataFetcher
-from src.data_processors import TrafficProcessor
+from src.data_processors import TrafficProcessor, WorkloadProcessor, WorkloadServiceProcessor
 from src.report_generator import ReportGenerator
 from src.graph_generator import GraphGenerator
 from src.ai_models import AnthropicModel, OpenAIModel, OllamaModel
-from src.ai_advisor import TrafficAIAdvisor, TrafficGraphAdvisor, ATTACKAdvisor  # Add ATTACKAdvisor import
+from src.ai_advisor import TrafficAIAdvisor, TrafficGraphAdvisor, ATTACKAdvisor, AIAdvisor
 import os
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.units import inch
+from datetime import datetime, timedelta
 
 
 def illumio_color_scheme():
@@ -25,23 +26,15 @@ def illumio_color_scheme():
 def generate_test_traffic_report(output_file):
     # Initialize DataFetcher
     data_fetcher = DataFetcher()
+    graph_generator = GraphGenerator()
 
-    # Fetch traffic data
-    try:
-        traffic_flows = data_fetcher.fetch_traffic_data()
-        label_href_map = data_fetcher.fetch_label_href_map()
-        value_href_map = data_fetcher.fetch_value_href_map()
-        print(f"Fetched {len(traffic_flows)} traffic flows")
-    except Exception as e:
-        print(f"Error fetching traffic data: {str(e)}")
-        traffic_flows = []
 
     # Initialize report generator with customization
     report_generator = ReportGenerator(
         output_file,
         color_scheme=illumio_color_scheme(),
         header_text="Confidential - Internal Use Only",
-        footer_text="Generated on 2023-04-15",
+        footer_text="Generated on " + datetime.now().strftime("%Y-%m-%d"),
         logo_path="examples/illumio-logo.png"
     )
 
@@ -49,7 +42,114 @@ def generate_test_traffic_report(output_file):
     report_generator.add_title("Risk analysis report")
 
     # Generate traffic graphs
+
+    workloads = data_fetcher.fetch_workload_data()
+    detailed_workloads = data_fetcher.fetch_workload_services()
+
+    # Fetch traffic data
+    try:
+        traffic_flows = data_fetcher.fetch_traffic_data()
+        # Fetch traffic data
+        label_href_map = data_fetcher.fetch_label_href_map()
+        value_href_map = data_fetcher.fetch_value_href_map()    
+
+        print(f"Fetched {len(traffic_flows)} traffic flows")
+    except Exception as e:
+        print(f"Error fetching traffic data: {str(e)}")
+        traffic_flows = []
+
+    # Initialize processors
+    workload_processor = WorkloadProcessor(workloads)
+    service_processor = WorkloadServiceProcessor(detailed_workloads)
+
+    # Initialize GraphGenerator
     graph_generator = GraphGenerator()
+
+    # Choose your model
+    model = AnthropicModel(api_key=os.getenv('ANTHROPIC_API_KEY'), model="claude-3-5-sonnet-20240620")
+    # model = OpenAIModel(api_key=os.getenv('OPENAI_API_KEY'), model="gpt-4o-mini")
+    # Or use one of these:
+    # model = OllamaModel(model="llama3.1:8b")
+
+    ai_advisor = AIAdvisor(model)
+    traffic_ai_advisor = TrafficAIAdvisor(model)
+    traffic_graph_advisor = TrafficGraphAdvisor(model)
+    attack_advisor = ATTACKAdvisor(model)  # Initialize the ATTACKAdvisor
+    # Initialize AIAdvisor
+
+    # Generate OS summary graph
+    os_summary_data = workload_processor.get_os_summary_for_graph()
+    os_summary_graph = graph_generator.generate_pie_chart(
+        os_summary_data, 
+        "OS Distribution", 
+        "os_summary.png"
+    )
+
+    # Generate enforcement mode summary graph
+    enforcement_mode_data = workload_processor.get_enforcement_mode_for_graph()
+    enforcement_mode_graph = graph_generator.generate_pie_chart(
+        enforcement_mode_data,
+        "Workload Enforcement Mode Distribution",
+        "enforcement_mode_summary.png"
+    )
+
+    report_generator.add_section("Workload Summary")
+    report_generator.add_explanation(
+        "This section provides an overview of workloads in the environment.",
+        icon_path="examples/info_icon.png",
+        icon_position='left'
+    )
+    report_generator.add_table(workload_processor.get_os_summary())
+    report_generator.add_table(workload_processor.get_online_status())
+    
+    report_generator.add_section("Top 10 Hostnames")
+    report_generator.add_explanation(
+        "This list represents the most frequently occurring hostnames in your environment.",
+        icon_path="examples/info_icon.png",
+        icon_position='left'
+    )
+    report_generator.add_table(workload_processor.get_top_hostnames())
+
+    report_generator.add_section("Service Summary")
+    report_generator.add_explanation(
+        "This section provides an overview of services and open ports across all workloads.",
+        icon_path="examples/info_icon.png",
+        icon_position='left'
+    )
+    report_generator.add_table(service_processor.get_top_ports())
+    report_generator.add_table(service_processor.get_protocol_summary())
+
+    # Generate open ports summary graph
+    open_ports_data = service_processor.get_open_ports_summary()
+    open_ports_graph = graph_generator.generate_horizontal_bar_chart(
+        open_ports_data,
+        "Top 20 Open Ports",
+        "open_ports_summary.png",
+        "Number of Machines",
+        "Port/Protocol (Count - Percentage)"
+    )
+
+    # Add the graph to the report
+    report_generator.add_section("Open Ports Summary")
+    report_generator.add_explanation("This chart shows the distribution of the top 20 open ports across all workloads, sorted by the number of machines with each port open. Ports are represented as 'port_number/protocol', followed by the count and percentage of machines with this port open.")
+    report_generator.add_graph(open_ports_graph)
+
+    # Add OS distribution graph to the report
+    report_generator.add_section("OS Distribution")
+    report_generator.add_explanation("This chart shows the distribution of operating systems across all workloads.")
+    report_generator.add_graph(os_summary_graph)
+
+    # Add enforcement mode distribution graph to the report
+    report_generator.add_section("Workload Enforcement Mode Distribution")
+    report_generator.add_explanation("This chart shows the distribution of enforcement modes across all workloads.")
+    report_generator.add_graph(enforcement_mode_graph)
+
+    # Add enforcement mode summary table
+    report_generator.add_section("Enforcement Mode Summary")
+    report_generator.add_explanation("This table provides a summary of workload enforcement modes.")
+    enforcement_summary = workload_processor.get_enforcement_mode_summary().reset_index()
+    enforcement_summary.columns = ['Enforcement Mode', 'Count']
+    report_generator.add_table(enforcement_summary)
 
     if not traffic_flows:
         print("No traffic data available. Skipping traffic section.")
@@ -172,7 +272,7 @@ def generate_test_traffic_report(output_file):
         )
         report_generator.add_markdown(traffic_ai_advice)
 
-        # Generate traffic graph
+       # Generate traffic graph
         try:
             graph_image_path = os.path.abspath("traffic_graph.png")
             graph_image_path = traffic_graph_advisor.generate_mermaid_image(traffic_summary, graph_image_path)

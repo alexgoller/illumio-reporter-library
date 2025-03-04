@@ -43,9 +43,18 @@ model = OllamaModel(model="llama2")
 ai_advisor = AIAdvisor(model)
 ```
 
+## Status Box
+
+The generated report includes a status box with important metadata:
+
+- PCE Information: The hostname and port of the Illumio PCE used for the report.
+- Time Range: The time period covered by the report data.
+- Creation Time: The exact time when the report was generated.
+
+This information helps in tracking and referencing reports, especially when multiple reports are generated over time or from different PCEs.
+
 ## Next Steps
 
 - Explore the [Core Concepts](../core_concepts/data_fetching.md) to understand how the library works
 - Learn about advanced [Features](../features/traffic_analysis.md) for in-depth analysis
 - Check out the [Customization](../customization/report_styling.md) options to tailor the reports to your needs
-

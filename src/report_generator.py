@@ -16,6 +16,7 @@ import tempfile
 import os
 import re
 import io
+from datetime import datetime
 
 class IconAndText(Flowable):
     def __init__(self, icon_path, text, icon_width, icon_height, text_style, icon_position='left'):
@@ -123,6 +124,14 @@ class ReportGenerator:
             self.styles['Normal'].fontSize = 10
             self.styles['Normal'].textColor = self.color_scheme['text']
             self.styles['Normal'].spaceAfter = 6
+
+            self.styles['Section'] = ParagraphStyle(
+                'Section',
+                parent=self.styles['Normal'],
+                fontSize=14,
+                textColor=self.color_scheme.get('heading', colors.black),  # Use 'heading' color or default to black
+                spaceAfter=6
+            )
 
         except Exception as e:
             print(f"Error in setup_styles: {e}")
@@ -422,3 +431,35 @@ class ReportGenerator:
         # Add the image to the elements list
         self.elements.append(img)
         self.elements.append(Spacer(1, 12))  # Add some space after the image
+
+    def add_status_box(self, pce_info, time_range):
+        # Create a styled paragraph for each piece of information
+        pce_para = Paragraph(f"PCE: {pce_info}", self.styles['Normal'])
+        time_range_para = Paragraph(f"Time Range: {time_range}", self.styles['Normal'])
+        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        created_para = Paragraph(f"Created: {created_at}", self.styles['Normal'])
+
+        # Create a table for the status box
+        data = [[pce_para], [time_range_para], [created_para]]
+        table = Table(data, colWidths=[400])  # Adjust width as needed
+
+        # Add some style to the table
+        table.setStyle(TableStyle([
+            ('BOX', (0, 0), (-1, -1), 1, colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+        ]))
+
+        # Add the table to the report
+        self.elements.append(table)
+        self.elements.append(Spacer(1, 12))
