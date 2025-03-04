@@ -17,6 +17,8 @@ The Illumio Reporter Library is a powerful tool designed to analyze network traf
 To install the Illumio Reporter Library, run the following command:
 
 ```
+pip install illumio-reporter-library
+```
 
 ## Quick Start
 
@@ -29,7 +31,6 @@ from illumio_reporter_library import IllumioReporter
 reporter = IllumioReporter(api_key='your_api_key', api_secret='your_api_secret')
 
 # Fetch and process network traffic data
-
 
 ```
 
