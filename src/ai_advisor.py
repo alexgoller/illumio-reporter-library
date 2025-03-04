@@ -95,7 +95,6 @@ class TrafficAIAdvisor:
         """
 
         response = self.model.generate_response(prompt)
-        print(response)
         return response
 
 class TrafficGraphAdvisor:

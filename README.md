@@ -2,14 +2,13 @@
 
 ## Overview
 
-The Illumio Reporter Library is a powerful tool designed to analyze network traffic data, generate comprehensive security reports, and provide AI-driven recommendations based on the MITRE ATT&CK framework. This library integrates with Illumio's security platform to offer deep insights into your network's security posture.
+The Illumio Reporter Library is a powerful tool designed to analyze network traffic data, generate comprehensive security reports, and provide AI-driven recommendations. This library integrates with Illumio's Core security platform to offer deep insights into your network's security posture.
 
 ## Features
 
 - Fetch and process network traffic data from Illumio
 - Generate detailed traffic summaries and visualizations
 - Provide AI-driven security recommendations
-- Create MITRE ATT&CK framework-based analysis
 - Generate PDF reports with customizable styling
 
 ## Installation

@@ -25,9 +25,9 @@ def main():
     data_fetcher = DataFetcher()
     
     # Initialize AI Model (choose one)
-    model = AnthropicModel(api_key=os.getenv('ANTHROPIC_API_KEY'), model="claude-3-5-sonnet-20240620")
+    # model = AnthropicModel(api_key=os.getenv('ANTHROPIC_API_KEY'), model="claude-3-5-sonnet-20240620")
     # or
-    # model = OpenAIModel(api_key=os.getenv('OPENAI_API_KEY'), model="gpt-4-turbo-preview")
+    model = OpenAIModel(api_key=os.getenv('OPENAI_API_KEY'), model="gpt-4-turbo-preview")
     # or
     # model = OllamaModel(model="llama2")
     
@@ -75,7 +75,7 @@ def main():
 
     # Generate report with custom color scheme, header, footer, and logo
     report_generator = ReportGenerator(
-        filename="workload_service_report.pdf",
+        output_file="workload_service_report.pdf",
         color_scheme=illumio_color_scheme(),
         header_text="Confidential - Internal Use Only",
         footer_text="Generated on 2023-04-15",
@@ -143,16 +143,6 @@ def main():
     enforcement_summary.columns = ['Enforcement Mode', 'Count']
     report_generator.add_table(enforcement_summary)
 
-    # Add network distribution section
-    report_generator.add_section("Network Distribution")
-    report_generator.add_explanation(
-        "This section shows the distribution of workloads across different networks.",
-        icon_path="examples/info_icon.png",
-        icon_position='left'
-    )
-    network_summary = workload_processor.get_workloads_by_network()
-    report_generator.add_table(network_summary)
-
     if not traffic_flows:
         print("No traffic data available. Skipping traffic section.")
         traffic_summary = "No traffic data available."
@@ -164,8 +154,8 @@ def main():
         traffic_summary = traffic_processor.summarize_traffic_for_ai_advisor()
 
         # Initialize TrafficAIAdvisor and TrafficGraphAdvisor
-        traffic_ai_advisor = TrafficAIAdvisor(os.getenv('ANTHROPIC_API_KEY'))
-        traffic_graph_advisor = TrafficGraphAdvisor(os.getenv('ANTHROPIC_API_KEY'))
+        traffic_ai_advisor = TrafficAIAdvisor(model)
+        traffic_graph_advisor = TrafficGraphAdvisor(model)
 
         # Get AI advice for traffic
         traffic_ai_advice = traffic_ai_advisor.get_traffic_advice(traffic_summary)
