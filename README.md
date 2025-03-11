@@ -61,20 +61,28 @@ report.save()
 
 ## Project Structure
 
-## Configuration
-
-Before using the library, make sure to set up your environment variables:
-
-- `ANTHROPIC_API_KEY`: Your Anthropic API key for AI-driven analysis
-- `OPENAI_API_KEY`: Your OpenAI API key (if using OpenAI models)
-
 ## Documentation
 
-For more detailed information on how to use the Illumio Reporter Library, please refer to our [full documentation](link_to_documentation).
+- [API Reference](docs/API.md)
+- [Configuration Guide](docs/CONFIGURATION.md)
+- [Development Guide](docs/DEVELOPMENT.md)
+- [Examples](docs/EXAMPLES.md)
+
+## Configuration
+
+The library can be configured using environment variables or a configuration file:
+
+```env
+ANTHROPIC_API_KEY=your-api-key
+OPENAI_API_KEY=your-api-key
+REPORT_DEFAULT_STYLE=default
+```
+
+See the [Configuration Guide](docs/CONFIGURATION.md) for more details.
 
 ## Contributing
 
-We welcome contributions to the Illumio Reporter Library! Please see our [contributing guidelines](CONTRIBUTING.md) for more information.
+Contributions are welcome! Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) for details on how to submit pull requests, report issues, and contribute to the project.
 
 ## License
 
