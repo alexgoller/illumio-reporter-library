@@ -1,37 +1,65 @@
 # Illumio Reporter Library
 
-## Overview
-
-The Illumio Reporter Library is a powerful tool designed to analyze network traffic data, generate comprehensive security reports, and provide AI-driven recommendations. This library integrates with Illumio's Core security platform to offer deep insights into your network's security posture.
+A Python library for generating comprehensive reports from Illumio PCE data with AI-powered insights.
 
 ## Features
 
-- Fetch and process network traffic data from Illumio
-- Generate detailed traffic summaries and visualizations
-- Provide AI-driven security recommendations
-- Generate PDF reports with customizable styling
+- **Workload Analysis**
+  - Network distribution analysis
+  - OS distribution statistics
+  - Enforcement mode analysis
+  - Online/offline status tracking
+
+- **Report Generation**
+  - PDF report generation using ReportLab
+  - Customizable templates and styling
+  - Dynamic content generation
+  - Support for graphs and tables
+
+- **AI Integration**
+  - AI-powered insights and recommendations
+  - Support for multiple AI providers (Anthropic, OpenAI, Ollama)
+  - Customizable analysis parameters
 
 ## Installation
 
-To install the Illumio Reporter Library, run the following command:
+```bash
+# Clone the repository
+git clone https://github.com/your-org/illumio-reporter-library
 
-```
-pip install illumio-reporter-library
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
 ```
 
 ## Quick Start
 
-Here's a basic example of how to use the Illumio Reporter Library:
+```python
+from src.report_generator import ReportGenerator
+from src.data_processors import WorkloadProcessor
+from src.ai_models import AnthropicModel
 
+# Initialize components
+model = AnthropicModel(api_key="your-api-key", model="claude-3-5-sonnet-20240620")
+report = ReportGenerator("output.pdf")
+
+# Add content
+report.add_title("Illumio Environment Report")
+report.add_section("Workload Analysis")
+
+# Generate workload analysis
+workload_data = {...}  # Your workload data
+processor = WorkloadProcessor(workload_data)
+report.add_table(processor.get_os_summary())
+report.add_network_workloads(processor.get_workloads_by_network())
+
+# Save report
+report.save()
 ```
-from illumio_reporter_library import IllumioReporter
 
-# Initialize the reporter with your Illumio API credentials
-reporter = IllumioReporter(api_key='your_api_key', api_secret='your_api_secret')
-
-# Fetch and process network traffic data
-
-```
+## Project Structure
 
 ## Configuration
 

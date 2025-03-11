@@ -66,13 +66,13 @@ def main():
     report_generator = ReportGenerator(
         output_file="sample_reports/AI-sample-report.pdf",
         color_scheme=illumio_color_scheme(),
-        header_text="Confidential - Internal Use Only",
+        header_text="AI Security Report",
         footer_text="Generated March 4, 2025",
         logo_path="examples/illumio-logo.png"
     )
 
     # Create report
-    report_generator.add_title("Illumio AI Security Report")
+    report_generator.add_title("AI Security Findings")
     
     if not traffic_flows:
         print("No traffic data available. Skipping traffic section.")
@@ -141,7 +141,7 @@ def main():
         traffic_processor = TrafficProcessor(traffic_flows, label_href_map, value_href_map)
 
     # Save report
-    report_generator.save("AI-sample-report.pdf")
+    report_generator.save("sample_reports/AI-sample-report.pdf")
 
     print("AI-sample-report.pdf generated")
 
